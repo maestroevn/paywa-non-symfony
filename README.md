@@ -10,7 +10,7 @@
 ## Installation
 Step 1
 ```shell
-git clone
+git clone git@github.com:maestroevn/paywa-non-symfony.git
 ```
 
 Step 2
