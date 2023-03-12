@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Paywa\CommissionTask;
+namespace Paywa\CommissionTask\Entity;
 
 use DateTime;
 use Exception;
@@ -11,7 +11,8 @@ use GuzzleHttp\Exception\GuzzleException;
 use Paywa\CommissionTask\Enum\Currency;
 use Paywa\CommissionTask\Enum\UserType;
 use Paywa\CommissionTask\Enum\OperationType;
-use Paywa\CommissionTask\Service\ExchangeRates;
+use Paywa\CommissionTask\Helper\DateHelper;
+use Paywa\CommissionTask\Service\ExchangeRateService;
 
 class UserOperation
 {
@@ -22,8 +23,31 @@ class UserOperation
     protected UserType $userType;
     protected OperationType $operationType;
     protected BigDecimal $amount;
-    protected BigDecimal $amountInBaseCurrency;
     protected Currency $currency;
+
+    protected string $operationWeekUniqueId;
+    protected BigDecimal $amountInBaseCurrency;
+
+    /**
+     * @param DateTime $date
+     * @return string
+     */
+    private function composeWeekUniqueId(DateTime $date): string
+    {
+        // To create a unique `weekId` of any week let's take Monday of the same week of given date,
+        // take year, take week number and concat
+
+        $monday = DateHelper::getSameWeekMonday($date);
+
+        $operationYear = $monday->format('Y');
+        $operationWeekNumberInYear = $monday->format('W');
+
+        return sprintf(
+            '%s_%s',
+            $operationYear,
+            $operationWeekNumberInYear,
+        );
+    }
 
     /**
      * @throws GuzzleException
@@ -39,11 +63,13 @@ class UserOperation
         $this->setAmount(BigDecimal::of($data[4]));
         $this->setCurrency(Currency::from($data[5]));
 
+        $this->setOperationWeekUniqueId($this->composeWeekUniqueId($this->getOperationDate()));
+
         if ($this->getCurrency() === self::BASE_CURRENCY) {
             $this->setAmountInBaseCurrency($this->getAmount());
         } else {
             $this->setAmountInBaseCurrency(
-                ExchangeRates::getInstance()->convertToEuro($this->getAmount(), $this->getCurrency())
+                ExchangeRateService::getInstance()->convertToEuro($this->getAmount(), $this->getCurrency())
             );
         }
     }
@@ -59,7 +85,7 @@ class UserOperation
     /**
      * @param DateTime $operationDate
      */
-    public function setOperationDate(DateTime $operationDate): void
+    protected function setOperationDate(DateTime $operationDate): void
     {
         $this->operationDate = $operationDate;
     }
@@ -75,7 +101,7 @@ class UserOperation
     /**
      * @param int $userId
      */
-    public function setUserId(int $userId): void
+    protected function setUserId(int $userId): void
     {
         $this->userId = $userId;
     }
@@ -91,7 +117,7 @@ class UserOperation
     /**
      * @param UserType $userType
      */
-    public function setUserType(UserType $userType): void
+    protected function setUserType(UserType $userType): void
     {
         $this->userType = $userType;
     }
@@ -107,7 +133,7 @@ class UserOperation
     /**
      * @param OperationType $operationType
      */
-    public function setOperationType(OperationType $operationType): void
+    protected function setOperationType(OperationType $operationType): void
     {
         $this->operationType = $operationType;
     }
@@ -123,25 +149,9 @@ class UserOperation
     /**
      * @param BigDecimal $amount
      */
-    public function setAmount(BigDecimal $amount): void
+    protected function setAmount(BigDecimal $amount): void
     {
         $this->amount = $amount;
-    }
-
-    /**
-     * @return BigDecimal
-     */
-    public function getAmountInBaseCurrency(): BigDecimal
-    {
-        return $this->amountInBaseCurrency;
-    }
-
-    /**
-     * @param BigDecimal $amountInBaseCurrency
-     */
-    public function setAmountInBaseCurrency(BigDecimal $amountInBaseCurrency): void
-    {
-        $this->amountInBaseCurrency = $amountInBaseCurrency;
     }
 
     /**
@@ -155,8 +165,40 @@ class UserOperation
     /**
      * @param Currency $currency
      */
-    public function setCurrency(Currency $currency): void
+    protected function setCurrency(Currency $currency): void
     {
         $this->currency = $currency;
+    }
+
+    /**
+     * @return string
+     */
+    public function getOperationWeekUniqueId(): string
+    {
+        return $this->operationWeekUniqueId;
+    }
+
+    /**
+     * @param string $operationWeekUniqueId
+     */
+    protected function setOperationWeekUniqueId(string $operationWeekUniqueId): void
+    {
+        $this->operationWeekUniqueId = $operationWeekUniqueId;
+    }
+
+    /**
+     * @return BigDecimal
+     */
+    public function getAmountInBaseCurrency(): BigDecimal
+    {
+        return $this->amountInBaseCurrency;
+    }
+
+    /**
+     * @param BigDecimal $amountInBaseCurrency
+     */
+    protected function setAmountInBaseCurrency(BigDecimal $amountInBaseCurrency): void
+    {
+        $this->amountInBaseCurrency = $amountInBaseCurrency;
     }
 }

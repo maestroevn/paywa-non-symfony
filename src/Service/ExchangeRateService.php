@@ -14,7 +14,7 @@ use Brick\Math\Exception\MathException;
 use Paywa\CommissionTask\Enum\Currency;
 use Paywa\CommissionTask\CommonCore\Singleton;
 
-class ExchangeRates extends Singleton
+class ExchangeRateService extends Singleton
 {
     private const ENDPOINT = 'https://developers.paysera.com/tasks/api/currency-exchange-rates';
 
@@ -43,13 +43,13 @@ class ExchangeRates extends Singleton
     }
 
     /**
-     * @return ExchangeRates
+     * @return ExchangeRateService
      * @throws GuzzleException
      * @throws Exception
      * @psalm-suppress MixedInferredReturnType
      * @psalm-suppress MixedReturnStatement
      */
-    public static function getInstance(): ExchangeRates
+    public static function getInstance(): ExchangeRateService
     {
         $className = static::class;
         if (false === array_key_exists($className, self::$instances)) {

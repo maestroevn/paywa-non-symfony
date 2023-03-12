@@ -9,11 +9,11 @@ use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\RoundingNecessaryException;
-use Paywa\CommissionTask\UserOperation;
 use Paywa\CommissionTask\Enum\Currency;
 use Paywa\CommissionTask\Enum\OperationType;
+use Paywa\CommissionTask\Entity\UserOperation;
 
-abstract class CommissionCalculator implements CommissionCalculatorInterface
+abstract class CommissionCalculatorServiceBase implements CommissionCalculatorInterface
 {
     private const DEPOSIT_COMMISSION_PERCENT = 0.03;
 

@@ -7,9 +7,9 @@ namespace Paywa\CommissionTask\Service\CommissionCalculator;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\RoundingNecessaryException;
-use Paywa\CommissionTask\UserOperation;
+use Paywa\CommissionTask\Entity\UserOperation;
 
-class BusinessUserCommissionCalculator extends CommissionCalculator
+class BusinessCommissionCalculatorService extends CommissionCalculatorServiceBase
 {
     private const WITHDRAW_COMMISSION_PERCENT = 0.5;
 

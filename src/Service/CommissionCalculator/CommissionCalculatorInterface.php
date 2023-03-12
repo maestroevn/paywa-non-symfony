@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Paywa\CommissionTask\Service\CommissionCalculator;
 
 use Brick\Math\BigDecimal;
-use Paywa\CommissionTask\UserOperation;
+use Paywa\CommissionTask\Entity\UserOperation;
 
 interface CommissionCalculatorInterface
 {

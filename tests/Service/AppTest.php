@@ -4,32 +4,29 @@ declare(strict_types=1);
 
 namespace Paysera\CommissionTask\Tests\Service;
 
-use Paywa\CommissionTask\App;
 use ReflectionClass;
+use ReflectionException;
 use PHPUnit\Framework\TestCase;
-use Brick\Math\BigDecimal;
-use Brick\Math\Exception\MathException;
 use GuzzleHttp\Exception\GuzzleException;
-use Paywa\CommissionTask\Enum\Currency;
-use Paywa\CommissionTask\Service\ExchangeRates;
+use Paywa\CommissionTask\App;
+use Paywa\CommissionTask\Service\ExchangeRateService;
 
 class AppTest extends TestCase
 {
-    private ExchangeRates $exchangeRatesService;
-
     /**
      * @return void
      * @throws GuzzleException
+     * @throws ReflectionException
      */
     public function setUp(): void
     {
-        $this->exchangeRatesService = ExchangeRates::getInstance();
+        $exchangeRatesService = ExchangeRateService::getInstance();
 
-        $reflection = new ReflectionClass($this->exchangeRatesService);
+        $reflection = new ReflectionClass($exchangeRatesService);
         $reflectionProperty = $reflection->getProperty('exchangeRates');
 
         $reflectionProperty->setValue(
-            $this->exchangeRatesService,
+            $exchangeRatesService,
             [
                 'USD' => 1.1497,
                 'JPY' => 129.53,

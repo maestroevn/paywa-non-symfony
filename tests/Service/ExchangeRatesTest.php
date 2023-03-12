@@ -10,11 +10,11 @@ use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
 use GuzzleHttp\Exception\GuzzleException;
 use Paywa\CommissionTask\Enum\Currency;
-use Paywa\CommissionTask\Service\ExchangeRates;
+use Paywa\CommissionTask\Service\ExchangeRateService;
 
 class ExchangeRatesTest extends TestCase
 {
-    private ExchangeRates $exchangeRatesService;
+    private ExchangeRateService $exchangeRatesService;
 
     /**
      * @return void
@@ -22,7 +22,7 @@ class ExchangeRatesTest extends TestCase
      */
     public function setUp(): void
     {
-        $this->exchangeRatesService = ExchangeRates::getInstance();
+        $this->exchangeRatesService = ExchangeRateService::getInstance();
 
         $reflection = new ReflectionClass($this->exchangeRatesService);
         $reflectionProperty = $reflection->getProperty('exchangeRates');

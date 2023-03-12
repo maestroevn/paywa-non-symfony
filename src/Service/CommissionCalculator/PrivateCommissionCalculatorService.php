@@ -7,11 +7,11 @@ namespace Paywa\CommissionTask\Service\CommissionCalculator;
 use Exception;
 use Brick\Math\BigDecimal;
 use GuzzleHttp\Exception\GuzzleException;
-use Paywa\CommissionTask\UserOperation;
-use Paywa\CommissionTask\Service\ExchangeRates;
+use Paywa\CommissionTask\Entity\UserOperation;
+use Paywa\CommissionTask\Service\ExchangeRateService;
 use Paywa\CommissionTask\Repository\UserOperationRepository;
 
-class PrivateUserCommissionCalculator extends CommissionCalculator
+class PrivateCommissionCalculatorService extends CommissionCalculatorServiceBase
 {
     private const WITHDRAW_COMMISSION_PERCENT = 0.3;
     private const WITHDRAW_WEEKLY_LIMIT_ON_AMOUNT = 1000.00;
@@ -28,13 +28,11 @@ class PrivateUserCommissionCalculator extends CommissionCalculator
         /** @var UserOperationRepository $userOperationRepository */
         $userOperationRepository = UserOperationRepository::getInstance();
         $weeklyOperationsCount = $userOperationRepository->getUserWeeklyWithdrawOperationsCount(
-            $userOperation->getOperationDate(),
-            $userOperation->getUserId(),
+            $userOperation,
         );
 
         $weeklyOperationsAmountTotal = $userOperationRepository->getUserWeeklyWithdrawOperationsAmountTotal(
-            $userOperation->getOperationDate(),
-            $userOperation->getUserId(),
+            $userOperation,
         );
 
         if ($weeklyOperationsCount > self::WITHDRAW_WEEKLY_LIMIT_ON_COUNT) {
@@ -61,7 +59,7 @@ class PrivateUserCommissionCalculator extends CommissionCalculator
             );
         } else {
             return $this->calculateCommissionAmount(
-                ExchangeRates::getInstance()->convertFromEuro(
+                ExchangeRateService::getInstance()->convertFromEuro(
                     $weeklyOperationsAmountTotal->minus(self::WITHDRAW_WEEKLY_LIMIT_ON_AMOUNT),
                     $userOperation->getCurrency(),
                 ),

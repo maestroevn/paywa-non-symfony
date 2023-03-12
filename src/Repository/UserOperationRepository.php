@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Paywa\CommissionTask\Repository;
 
 use Exception;
-use DateTime;
-use DateInterval;
 use Brick\Math\BigDecimal;
-use Paywa\CommissionTask\UserOperation;
+use Brick\Math\Exception\MathException;
 use Paywa\CommissionTask\Enum\OperationType;
+use Paywa\CommissionTask\Entity\UserOperation;
 use Paywa\CommissionTask\CommonCore\Singleton;
 
 class UserOperationRepository extends Singleton
@@ -24,7 +23,7 @@ class UserOperationRepository extends Singleton
      */
     public function addOperation(UserOperation $operation): UserOperationRepository
     {
-        $operationWeekUniqueId = $this->composeWeekUniqueId($operation->getOperationDate());
+        $operationWeekUniqueId = $operation->getOperationWeekUniqueId();
 
         if (false === array_key_exists($operation->getUserId(), $this->operations)) {
             $this->operations[$operation->getUserId()] = [];
@@ -40,17 +39,17 @@ class UserOperationRepository extends Singleton
     }
 
     /**
-     * @param DateTime $operationDate
-     * @param int $userId
+     * @param UserOperation $nexOperation
      * @return int
-     * @throws Exception
      */
-    public function getUserWeeklyWithdrawOperationsCount(DateTime $operationDate, int $userId): int
+    public function getUserWeeklyWithdrawOperationsCount(UserOperation $nexOperation): int
     {
-        $operationWeekUniqueId = $this->composeWeekUniqueId($operationDate);
-
         $count = 0;
-        foreach ($this->operations[$userId][$operationWeekUniqueId] as $operation) {
+        foreach (
+            $this->operations
+                [$nexOperation->getUserId()]
+                [$nexOperation->getOperationWeekUniqueId()] as $operation
+        ) {
             if ($operation->getOperationType() === OperationType::WITHDRAW) {
                 $count++;
             }
@@ -60,17 +59,19 @@ class UserOperationRepository extends Singleton
     }
 
     /**
-     * @param DateTime $operationDate
-     * @param int $userId
+     * @param UserOperation $nexOperation
      * @return BigDecimal
-     * @throws Exception
+     * @throws MathException
      */
-    public function getUserWeeklyWithdrawOperationsAmountTotal(DateTime $operationDate, int $userId): BigDecimal
+    public function getUserWeeklyWithdrawOperationsAmountTotal(UserOperation $nexOperation): BigDecimal
     {
-        $operationWeekUniqueId = $this->composeWeekUniqueId($operationDate);
-
         $weeklyTotal = BigDecimal::of(0);
-        foreach ($this->operations[$userId][$operationWeekUniqueId] as $operation) {
+
+        foreach (
+            $this->operations
+            [$nexOperation->getUserId()]
+            [$nexOperation->getOperationWeekUniqueId()] as $operation
+        ) {
             if ($operation->getOperationType() !== OperationType::WITHDRAW) {
                 continue;
             }
@@ -78,39 +79,5 @@ class UserOperationRepository extends Singleton
         }
 
         return $weeklyTotal;
-    }
-
-    /**
-     * @param DateTime $date
-     * @return string
-     */
-    private function composeWeekUniqueId(DateTime $date): string
-    {
-        // To create a unique `weekId` of any week let's take Monday of the same week of given date,
-        // take year, take week number and concat
-
-        $monday = $this->getSameWeekMonday($date);
-
-        $operationYear = $monday->format('Y');
-        $operationWeekNumberInYear = $monday->format('W');
-
-        return $operationYear . '_' . $operationWeekNumberInYear;
-    }
-
-    /**
-     * @param DateTime $date
-     * @return DateTime
-     */
-    private function getSameWeekMonday(DateTime $date): DateTime
-    {
-        $dayOfWeek = (int)$date->format('w');
-        if ($dayOfWeek >= 1) {
-            $intervalString = ($dayOfWeek - 1) . ' days';
-        } else {
-            $intervalString = '5 days';
-        }
-        $interval = DateInterval::createFromDateString($intervalString);
-
-        return $date->sub($interval);
     }
 }
